@@ -48,11 +48,12 @@ class User extends Authenticatable
     
     public function loadRelationshipCounts()
     {
-        $this->loadCount('microposts', 'followings', 'followers');
-    }
+        //リレーションメソッドを引数として指定する
+        $this->loadCount('microposts', 'followings', 'followers', 'favorites');
+    } 
     
     /**
-     * このユーザがフォロー中のユーザ。（ Userモデルとの関係を定義）
+     * このユーザがフォロー中のユーザ。（Userモデルとの関係を定義）
      */
     public function followings()
     {
@@ -77,7 +78,7 @@ class User extends Authenticatable
     {
         // すでにフォローしているかの確認
         $exist = $this->is_following($userId);
-        // 対象が自分自身かどうかの確認
+        // 対象が自分自身かどうかの確認  
         $its_me = $this->id == $userId;
 
         if ($exist || $its_me) {
@@ -136,4 +137,50 @@ class User extends Authenticatable
         $userIds[] = $this->id;
         // それらのユーザが所有する投稿に絞り込む
         return Micropost::whereIn('user_id', $userIds);
+    }
+    
+    //このユーザーがお気に入り中のマイクロポスト　ー　Userモデルとの関係を定義
+    public function favorites()
+    {//Modelクラス・中間テーブル・中間テーブル中の自分のid・中間テーブルの関係先id
+        return $this->belongsToMany(Micropost::class, 'favorites', 'user_id', 'favorite_id')->withTimestamps();
+    }
+    
+    // $micropostIdで指定されたマイクロポストをいいねする。
+    
+    public function favorite($micropostId) {
+          // すでにフォローしているかの確認
+        $exist = $this->is_favorite($micropostId);
+
+        if ($exist) {
+            // すでにお気に入りしていれば何もしない
+            return false;
+        } else {
+            // 未フォローであればフォローする
+            $this->favorites()->attach($micropostId);
+            return true;
+        }
+        
+    }
+   // $micropostIdで指定されたユーザをアンフェイバリットする。
+    public function unfavorite($micropostId) {
+         // すでにお気に入りしているかの確認
+        $exist = $this->is_favorite($micropostId);
+
+        if ($exist) {
+            // すでにフォローしていればフォローを外す
+            $this->favorites()->detach($micropostId);
+            return true;
+        } else {
+            // 未フォローであれば何もしない
+            return false;
+        }
+        
+    }
+    
+    //指定された $micropostIdのマイクロポストをこのユーザがお気に入り中であるか調べる。お気に入り中ならtrueを返す。
+    public function is_favorite($micropostId)
+    {
+        // お気に入り中のマイクロポストの中に $userIdのものが存在するか
+        return $this->favorites()->where('favorite_id', $micropostId)->exists();
+    }
 }

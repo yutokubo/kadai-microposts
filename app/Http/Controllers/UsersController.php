@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\User; // 追加
+use App\User; 
+
+use App\Micropost; // 追加
 
 class UsersController extends Controller
 {
@@ -38,35 +40,6 @@ class UsersController extends Controller
         ]);
     }
     
-     /**
-     * ユーザをフォローするアクション。
-     *
-     * @param  $id  相手ユーザのid
-     * @return \Illuminate\Http\Response
-     */
-    public function store($id)
-    {
-        // 認証済みユーザ（閲覧者）が、 idのユーザをフォローする
-        \Auth::user()->follow($id);
-        // 前のURLへリダイレクトさせる
-        return back();
-    }
-
-    /**
-     * ユーザをアンフォローするアクション。
-     *
-     * @param  $id  相手ユーザのid
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        // 認証済みユーザ（閲覧者）が、 idのユーザをアンフォローする
-        \Auth::user()->unfollow($id);
-        // 前のURLへリダイレクトさせる
-        return back();
-    }
-    
-    // 中略
 
     /**
      * ユーザのフォロー一覧ページを表示するアクション。
@@ -113,6 +86,34 @@ class UsersController extends Controller
         return view('users.followers', [
             'user' => $user,
             'users' => $followers,
+        ]);
+    }
+    
+     /**
+     * ユーザのお気に入り一覧ページを表示するアクション。
+     *
+     * @param  $id  ユーザのid
+     * @return \Illuminate\Http\Response
+     */
+    public function favorites($id)
+    {
+        // ユーザーのidを取得
+        $user = User::findOrFail($id);
+        
+        $micropost = $user->microposts();
+
+        // モデルの件数をロード
+        $user->loadRelationshipCounts();
+
+        // ユーザのお気に入り一覧を取得
+        $favorites = $user->favorites()->paginate(10);
+
+        // お気に入り一覧ビューでそれらを表示
+        return view('users.favorites', [
+            'user' => $user,
+            'micropost' =>  $micropost,
+            'microposts' => $favorites,
+            
         ]);
     }
 }

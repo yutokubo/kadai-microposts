@@ -16,9 +16,11 @@
                     </div>
                     <div>
                         @if (Auth::id() == $micropost->user_id)
+                        
+                        @include('favorite.favorite_button')
                             {{-- 投稿削除ボタンのフォーム --}}
                             {!! Form::open(['route' => ['microposts.destroy', $micropost->id], 'method' => 'delete']) !!}
-                                {!! Form::submit('Delete', ['class' => 'btn btn-danger btn-sm']) !!}
+                                {!! Form::submit('Delete', ['class' => 'btn btn-danger ']) !!}
                             {!! Form::close() !!}
                         @endif
                     </div>
