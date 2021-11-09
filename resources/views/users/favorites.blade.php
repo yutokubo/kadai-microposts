@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="row">
+    <div class="row"> 
         <aside class="col-sm-4">
             {{-- マイクロポスト情報 --}}
             <div class="card">
@@ -13,10 +13,6 @@
                     <img class="rounded img-fluid" src="{{ Gravatar::get($user->email, ['size' => 500]) }}" alt="">
                 </div>
              </div>
-             @foreach($microposts as $micropost) 
-            {{-- フェイバ／アンフェイバ　ボタン --}}
-               @include('favorite.favorite_button')
-             @endforeach
         </aside>
      
         <div class="col-sm-8">
